@@ -90,7 +90,7 @@ const checkCommonPairs = async () => {
           let otherPairs = otherExchanges[s][otherExName];
           let otherExchangeId = otherExchanges[s].exchange_id;
 
-            let [baseToken0, baseToken1, pairId, symbol] = await getObjectInfo(
+            let [baseToken0, baseToken1, pairId, symbol,decimal0,decimal1] = await getObjectInfo(
               baseExchange,
               basePair
             );
@@ -105,7 +105,7 @@ const checkCommonPairs = async () => {
             if (getIndex >= 0) {
               let deleteArray = otherPairs.splice(getIndex, 1);
   
-              let post = `('${symbol}','${otherExchangeId}','${otherPairId}','${baseToken0}','${baseToken1}'),('${symbol}','${baseExchangeId}','${pairId}','${baseToken0}','${baseToken1}')`;
+              let post = `('${symbol}','${otherExchangeId}','${otherPairId}','${baseToken0}','${baseToken1}','${decimal0}','${decimal1}'),('${symbol}','${baseExchangeId}','${pairId}','${baseToken0}','${baseToken1}','${decimal0}','${decimal1}')`;
               dataInsert.push(post);
             } else {
               let [getIndexElse, otherPairIdElse] = await getLoopIndex(
@@ -116,7 +116,7 @@ const checkCommonPairs = async () => {
               );
               if (getIndexElse >= 0) {
                 let deleteArray = otherPairs.splice(getIndexElse, 1);
-                let post = `('${symbol}','${otherExchangeId}','${otherPairIdElse}','${baseToken0}','${baseToken1}'),('${symbol}','${baseExchangeId}','${pairId}','${baseToken0}','${baseToken1}')`;
+                let post = `('${symbol}','${otherExchangeId}','${otherPairIdElse}','${baseToken0}','${baseToken1}','${decimal0}','${decimal1}'),('${symbol}','${baseExchangeId}','${pairId}','${baseToken0}','${baseToken1}','${decimal0}','${decimal1}')`;
                 dataInsert.push(post);
               }
             }
@@ -124,7 +124,7 @@ const checkCommonPairs = async () => {
             if (i == pairs.length -1 && j == exchangePairs.length - 1 && s == otherExchanges.length -1) {
                 if(dataInsert.length > 0){
                   var post = dataInsert.join();
-                  var sql = `INSERT INTO m_common_pair (symbol,exchange_id,pairtoken,token0,token1) values ${post}`;
+                  var sql = `INSERT INTO m_common_pair (symbol,exchange_id,pairtoken,token0,token1,decimal0,decimal1) values ${post}`;
                   var query = con.query(sql, post, function (err, res) {
                     if (err) throw err;
                   });
@@ -144,14 +144,20 @@ const getObjectInfo = async (exchange,exchangeData)=> {
   let token1;
   let pairId;
   let symbol;
+  let decimal0;
+  let decimal1;
   if(exchange == "UNISWAP"){
     token0 = exchangeData.token0.id
     token1 = exchangeData.token1.id
+    decimal0 = exchangeData.token0.decimals
+    decimal1 = exchangeData.token1.decimals
     pairId = exchangeData.id
     symbol = exchangeData.token0.symbol+"/"+exchangeData.token1.symbol;
   } else if(exchange == "SUSHISWAP") {
     token0 = exchangeData.token0.id
     token1 = exchangeData.token1.id
+    decimal0 = exchangeData.token0.decimals
+    decimal1 = exchangeData.token1.decimals
     pairId = exchangeData.id
     symbol = exchangeData.token0.symbol+"/"+exchangeData.token1.symbol;
   } else if(exchange == "BANCOR") {
@@ -169,7 +175,7 @@ const getObjectInfo = async (exchange,exchangeData)=> {
     symbol = exchangeData.token0.symbol+"/"+exchangeData.token1.symbol;
   } 
 
-  return [token0,token1,pairId,symbol]
+  return [token0,token1,pairId,symbol,decimal0,decimal1]
 }
 
 const getLoopIndex = async (token0,token1,exchange,otherPairs) => {
