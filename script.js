@@ -15,7 +15,6 @@ con.connect(function (err) {
    console.log("Connected!");
 });
 
-
 const init = async ()=> {
         await con.query(
           `SELECT * FROM m_exchanges  ORDER by exchange_id ASC`,
